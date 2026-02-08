@@ -7,10 +7,11 @@ A simple analytics dashboard for CSV and Excel files.
 ### Progress
 - [x] Project setup
 - [x] File upload (CSV, Excel)
-- [ ] Auto-detect columns
-- [ ] Sales analytics
+- [x] Auto-detect columns
+- [x] Basic metrics & summary stats
+- [ ] Charts & visualizations
 - [ ] Customer insights
-- [ ] Trend charts
+- [ ] Trend analysis
 
 ### Tech Stack
 - Python

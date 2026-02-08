@@ -1,9 +1,10 @@
 """
-Data Dash - Day 2: Added File Upload
+Data Dash - Day 3: Added Basic Metrics
 """
 
 import streamlit as st
 from src.load import load_file, get_column_info, get_data_preview
+from src.metrics import calculate_summary, get_top_values, get_grouped_breakdown
 
 # Page config
 st.set_page_config(
@@ -51,30 +52,70 @@ if uploaded_file is not None:
     df = load_file(uploaded_file)
     
     if df is not None:
-        st.success(f"Loaded {len(df)} rows!")
+        st.success(f"Loaded {len(df)} rows and {len(df.columns)} columns!")
         
         # Show column info
         info = get_column_info(df)
         
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("Total Rows", info['row_count'])
-        with col2:
-            st.metric("Total Columns", len(info['columns']))
-        
         # Data preview
-        st.subheader("📋 Data Preview")
-        st.dataframe(get_data_preview(df, 10), use_container_width=True)
+        with st.expander("📋 Data Preview", expanded=False):
+            st.dataframe(get_data_preview(df, 10), use_container_width=True)
         
-        # Column info
-        st.subheader("📊 Column Types")
-        col_info = st.columns(2)
-        with col_info[0]:
-            st.write("**Numeric columns:**")
-            st.write(info['numeric_cols'] if info['numeric_cols'] else "None found")
-        with col_info[1]:
-            st.write("**Text columns:**")
-            st.write(info['text_cols'] if info['text_cols'] else "None found")
+        st.markdown("---")
+        
+        # --- Metrics Section ---
+        st.subheader("📊 Quick Stats")
+        
+        numeric_cols = info['numeric_cols']
+        text_cols = info['text_cols']
+        
+        if numeric_cols:
+            # Show summary metrics as cards
+            summary = calculate_summary(df, numeric_cols)
+            
+            # Display up to 4 numeric columns as metric cards
+            display_cols = numeric_cols[:4]
+            cols = st.columns(len(display_cols))
+            
+            for i, col_name in enumerate(display_cols):
+                with cols[i]:
+                    st.metric(
+                        label=f"Total {col_name}",
+                        value=f"{summary[col_name]['sum']:,.2f}"
+                    )
+            
+            # Let user pick columns for breakdown
+            st.markdown("---")
+            st.subheader("🔍 Explore Your Data")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                group_by = st.selectbox(
+                    "Group by",
+                    options=text_cols if text_cols else ['No text columns found'],
+                    help="Pick a column to group your data by"
+                )
+            
+            with col2:
+                value_col = st.selectbox(
+                    "Measure",
+                    options=numeric_cols,
+                    help="Pick a numeric column to analyze"
+                )
+            
+            if group_by and group_by != 'No text columns found' and value_col:
+                # Top values
+                st.subheader(f"Top {group_by} by {value_col}")
+                top = get_top_values(df, group_by, value_col, n=10)
+                st.dataframe(top, use_container_width=True, hide_index=True)
+                
+                # Full breakdown
+                with st.expander("Full Breakdown"):
+                    breakdown = get_grouped_breakdown(df, group_by, numeric_cols)
+                    st.dataframe(breakdown, use_container_width=True, hide_index=True)
+        else:
+            st.warning("No numeric columns found in your data.")
 else:
     st.info("👆 Upload a file to get started")
 
