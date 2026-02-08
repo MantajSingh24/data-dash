@@ -4,8 +4,9 @@ A simple analytics dashboard for CSV and Excel files.
 
 ## Status: 🚧 In Development
 
-### Planned Features
-- [ ] File upload (CSV, Excel)
+### Progress
+- [x] Project setup
+- [x] File upload (CSV, Excel)
 - [ ] Auto-detect columns
 - [ ] Sales analytics
 - [ ] Customer insights
