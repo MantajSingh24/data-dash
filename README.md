@@ -9,8 +9,9 @@ A simple analytics dashboard for CSV and Excel files.
 - [x] File upload (CSV, Excel)
 - [x] Auto-detect columns
 - [x] Basic metrics & summary stats
-- [ ] Charts & visualizations
+- [x] Charts & visualizations (bar, pie, line)
 - [ ] Customer insights
+- [ ] Multi-page layout
 - [ ] Trend analysis
 
 ### Tech Stack
