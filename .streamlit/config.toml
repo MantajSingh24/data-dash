@@ -1,0 +1,19 @@
+[server]
+headless = true
+address = "localhost"
+port = 8501
+
+[browser]
+gatherUsageStats = false
+serverAddress = "localhost"
+
+[theme]
+primaryColor = "#ff6b6b"
+backgroundColor = "#1a1a2e"
+secondaryBackgroundColor = "#16213e"
+textColor = "#eaeaea"
+font = "sans serif"
+
+[client]
+showErrorDetails = true
+toolbarMode = "minimal"

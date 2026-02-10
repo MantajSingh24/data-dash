@@ -10,13 +10,17 @@ A simple analytics dashboard for CSV and Excel files.
 - [x] Auto-detect columns
 - [x] Basic metrics & summary stats
 - [x] Charts & visualizations (bar, pie, line)
-- [ ] Customer insights
-- [ ] Multi-page layout
-- [ ] Trend analysis
+- [x] Dark theme with custom styling
+- [x] Multi-page app structure
+- [x] Column mapping system
+- [x] Sample dataset included
+- [ ] Overview analytics page
+- [ ] Customer insights page
+- [ ] Returns analysis page
 
 ### Tech Stack
 - Python
-- Streamlit
+- Streamlit (multi-page apps)
 - Pandas
 - Plotly
 
@@ -26,7 +30,7 @@ A simple analytics dashboard for CSV and Excel files.
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
-streamlit run app.py
+streamlit run Home.py
 ```
 
 ---
