@@ -14,7 +14,7 @@ A simple analytics dashboard for CSV and Excel files.
 - [x] Multi-page app structure
 - [x] Column mapping system
 - [x] Sample dataset included
-- [ ] Overview analytics page
+- [x] Overview page (KPIs, trends, breakdowns)
 - [ ] Customer insights page
 - [ ] Returns analysis page
 
