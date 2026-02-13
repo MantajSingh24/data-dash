@@ -1,61 +1,11 @@
 """
 Data loading and preprocessing for Data Dash.
-Handles file import and column mapping.
+Handles dynamic column mapping for any dataset.
 """
 
 import pandas as pd
 import streamlit as st
-
-
-def load_file(uploaded_file):
-    """
-    Load data from uploaded CSV or Excel file.
-    
-    Args:
-        uploaded_file: Streamlit uploaded file object
-    
-    Returns:
-        pd.DataFrame or None
-    """
-    if uploaded_file is None:
-        return None
-    
-    try:
-        filename = uploaded_file.name.lower()
-        
-        if filename.endswith('.csv'):
-            df = pd.read_csv(uploaded_file)
-        elif filename.endswith(('.xlsx', '.xls')):
-            df = pd.read_excel(uploaded_file)
-        else:
-            st.error("Please upload a CSV or Excel file")
-            return None
-        
-        return df
-    except Exception as e:
-        st.error(f"Error loading file: {str(e)}")
-        return None
-
-
-def get_column_info(df: pd.DataFrame) -> dict:
-    """Get basic info about dataframe columns."""
-    if df is None:
-        return {}
-    
-    return {
-        'columns': df.columns.tolist(),
-        'dtypes': df.dtypes.astype(str).to_dict(),
-        'row_count': len(df),
-        'numeric_cols': df.select_dtypes(include=['number']).columns.tolist(),
-        'text_cols': df.select_dtypes(include=['object']).columns.tolist()
-    }
-
-
-def get_data_preview(df: pd.DataFrame, rows: int = 5) -> pd.DataFrame:
-    """Get a preview of the data."""
-    if df is None:
-        return pd.DataFrame()
-    return df.head(rows)
+from pathlib import Path
 
 
 def get_data_and_mapping():
@@ -63,7 +13,7 @@ def get_data_and_mapping():
     Get data and column mapping from session state.
     
     Returns:
-        tuple: (DataFrame, column_mapping dict) or (None, None)
+        tuple: (DataFrame, column_mapping dict) or (None, None) if not available
     """
     if 'data' not in st.session_state or st.session_state.data is None:
         return None, None
@@ -77,31 +27,61 @@ def get_data_and_mapping():
 def prepare_data(df: pd.DataFrame, mapping: dict) -> pd.DataFrame:
     """
     Prepare data based on column mapping.
-    Creates standardized internal columns (prefixed with _).
+    Standardizes column names for internal use.
+    
+    Args:
+        df: Raw dataframe
+        mapping: Column mapping dictionary
+    
+    Returns:
+        pd.DataFrame: Prepared dataframe with standardized columns
     """
     prepared = df.copy()
     
-    # Parse dates
+    # Parse date column if specified
     if mapping.get('date'):
         try:
             prepared['_date'] = pd.to_datetime(prepared[mapping['date']], errors='coerce')
             prepared['_year'] = prepared['_date'].dt.year
             prepared['_month'] = prepared['_date'].dt.month
             prepared['_year_month'] = prepared['_date'].dt.to_period('M').astype(str)
+            prepared['_quarter'] = prepared['_date'].dt.quarter
         except Exception:
             pass
     
-    # Numeric columns
-    for key in ['sales', 'profit', 'quantity', 'discount']:
-        if mapping.get(key):
-            prepared[f'_{key}'] = pd.to_numeric(prepared[mapping[key]], errors='coerce').fillna(0)
+    # Standardize numeric columns
+    if mapping.get('sales'):
+        prepared['_sales'] = pd.to_numeric(prepared[mapping['sales']], errors='coerce').fillna(0)
     
-    # Text/category columns
-    for key in ['category', 'customer', 'order_id', 'region', 'segment', 'product']:
-        if mapping.get(key):
-            prepared[f'_{key}'] = prepared[mapping[key]].astype(str)
+    if mapping.get('profit'):
+        prepared['_profit'] = pd.to_numeric(prepared[mapping['profit']], errors='coerce').fillna(0)
     
-    # Returned column (boolean)
+    if mapping.get('quantity'):
+        prepared['_quantity'] = pd.to_numeric(prepared[mapping['quantity']], errors='coerce').fillna(0)
+    
+    if mapping.get('discount'):
+        prepared['_discount'] = pd.to_numeric(prepared[mapping['discount']], errors='coerce').fillna(0)
+    
+    # Standardize category columns
+    if mapping.get('category'):
+        prepared['_category'] = prepared[mapping['category']].astype(str)
+    
+    if mapping.get('customer'):
+        prepared['_customer'] = prepared[mapping['customer']].astype(str)
+    
+    if mapping.get('order_id'):
+        prepared['_order_id'] = prepared[mapping['order_id']].astype(str)
+    
+    if mapping.get('region'):
+        prepared['_region'] = prepared[mapping['region']].astype(str)
+    
+    if mapping.get('segment'):
+        prepared['_segment'] = prepared[mapping['segment']].astype(str)
+    
+    if mapping.get('product'):
+        prepared['_product'] = prepared[mapping['product']].astype(str)
+    
+    # Handle returned/status column
     if mapping.get('returned'):
         col = mapping['returned']
         prepared['_returned'] = prepared[col].astype(str).str.lower().isin(['yes', 'true', '1', 'returned'])
@@ -109,33 +89,53 @@ def prepare_data(df: pd.DataFrame, mapping: dict) -> pd.DataFrame:
     return prepared
 
 
-def filter_data(df, start_date=None, end_date=None, categories=None, regions=None, segments=None):
-    """Filter dataframe based on user selections."""
+def filter_data(
+    df: pd.DataFrame,
+    start_date=None,
+    end_date=None,
+    categories: list = None,
+    regions: list = None,
+    segments: list = None
+) -> pd.DataFrame:
+    """
+    Filter the dataframe based on user selections.
+    Uses standardized column names (prefixed with _).
+    """
     filtered = df.copy()
     
-    if start_date and '_date' in filtered.columns:
-        filtered = filtered[filtered['_date'] >= pd.to_datetime(start_date)]
+    # Date filtering
+    if start_date is not None and '_date' in filtered.columns:
+        start_dt = pd.to_datetime(start_date)
+        filtered = filtered[filtered['_date'] >= start_dt]
     
-    if end_date and '_date' in filtered.columns:
-        filtered = filtered[filtered['_date'] <= pd.to_datetime(end_date)]
+    if end_date is not None and '_date' in filtered.columns:
+        end_dt = pd.to_datetime(end_date)
+        filtered = filtered[filtered['_date'] <= end_dt]
     
-    if categories and '_category' in filtered.columns:
+    # Category filtering
+    if categories and len(categories) > 0 and '_category' in filtered.columns:
         filtered = filtered[filtered['_category'].isin(categories)]
     
-    if regions and '_region' in filtered.columns:
+    if regions and len(regions) > 0 and '_region' in filtered.columns:
         filtered = filtered[filtered['_region'].isin(regions)]
     
-    if segments and '_segment' in filtered.columns:
+    if segments and len(segments) > 0 and '_segment' in filtered.columns:
         filtered = filtered[filtered['_segment'].isin(segments)]
     
     return filtered
 
 
 def get_filter_options(df: pd.DataFrame) -> dict:
-    """Get unique values for filter dropdowns."""
+    """
+    Get unique values for filter dropdowns.
+    Uses standardized column names.
+    """
     options = {
-        'min_date': None, 'max_date': None,
-        'categories': [], 'regions': [], 'segments': [],
+        'min_date': None,
+        'max_date': None,
+        'categories': [],
+        'regions': [],
+        'segments': [],
         'has_date': '_date' in df.columns,
         'has_category': '_category' in df.columns,
         'has_region': '_region' in df.columns,
@@ -157,8 +157,10 @@ def get_filter_options(df: pd.DataFrame) -> dict:
     
     if '_category' in df.columns:
         options['categories'] = sorted(df['_category'].dropna().unique().tolist())
+    
     if '_region' in df.columns:
         options['regions'] = sorted(df['_region'].dropna().unique().tolist())
+    
     if '_segment' in df.columns:
         options['segments'] = sorted(df['_segment'].dropna().unique().tolist())
     

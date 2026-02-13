@@ -1,28 +1,24 @@
 # Data Dash 📊
 
-A simple analytics dashboard for CSV and Excel files. Upload your spreadsheet and get instant insights.
+A beautiful analytics dashboard for CSV and Excel files. Upload your spreadsheet, map your columns, and get instant insights — all in one place.
 
-## Status: ✅ Core Features Complete
+## Features
 
-### Features
-- [x] File upload (CSV, Excel)
-- [x] Auto-detect column types
-- [x] Dynamic column mapping
-- [x] Basic metrics & summary stats
-- [x] Charts & visualizations (bar, pie, line, trend)
-- [x] Dark theme with custom styling
-- [x] Multi-page app structure
-- [x] Overview page (KPIs, trends, breakdowns)
-- [x] Customer insights (top buyers, loyalty, segmentation)
-- [x] Returns analysis (return rates, problem products)
-- [x] Sidebar filters (date, category, region)
-- [x] Sample dataset included
+- **File Upload** — Supports CSV and Excel files with auto-encoding detection
+- **Dynamic Column Mapping** — Map any dataset's columns to revenue, profit, dates, etc.
+- **Overview Dashboard** — KPIs, monthly trends, category & region breakdowns, top products
+- **Customer Insights** — Top buyers, repeat rate, loyalty analysis, segmentation
+- **Returns Analysis** — Return rates, problem products, month-over-month trends
+- **Sidebar Filters** — Filter by date range, category, region, and segment
+- **Dark Theme** — Professional dark UI with gradient styling
+- **Sample Data** — Includes a Superstore dataset to try out immediately
 
-### Tech Stack
-- Python
-- Streamlit (multi-page apps)
-- Pandas
-- Plotly
+## Tech Stack
+
+- **Python** — Core language
+- **Streamlit** — Multi-page web framework
+- **Pandas** — Data manipulation
+- **Plotly** — Interactive charts
 
 ## Setup
 
@@ -36,9 +32,32 @@ streamlit run Home.py
 ## How to Use
 
 1. Run the app and go to the **Home** page
-2. Upload a CSV or Excel file
-3. Map your columns (date, revenue, profit, category, etc.)
-4. Navigate to **Overview**, **Customers**, or **Returns** pages in the sidebar
+2. Upload a CSV or Excel file (or use the included sample data)
+3. Map your columns — date, revenue, profit, category, customer, etc.
+4. Navigate to **Overview**, **Customers**, or **Returns** in the sidebar
+5. Use sidebar filters to drill down into your data
+
+## Project Structure
+
+```
+Data Dash/
+├── Home.py                  # Main entry point — upload & column mapping
+├── pages/
+│   ├── 1_📈_Overview.py     # KPIs, trends, breakdowns
+│   ├── 2_👥_Customers.py    # Customer analytics & loyalty
+│   └── 3_🔄_Returns.py      # Return analysis & anomalies
+├── src/
+│   ├── __init__.py
+│   ├── load.py              # Data loading & preprocessing
+│   ├── metrics.py           # Business metrics calculations
+│   └── charts.py            # Plotly chart components
+├── data/
+│   └── superstore.csv       # Sample dataset
+├── .streamlit/
+│   └── config.toml          # Theme & server config
+├── requirements.txt
+└── start.bat                # Quick launcher (Windows)
+```
 
 ---
-*Built step by step as a learning project.*
+*Built as a learning project — step by step.*
