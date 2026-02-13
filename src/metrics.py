@@ -177,3 +177,46 @@ def get_region_breakdown(df):
 def get_segment_breakdown(df):
     """Get breakdown by segment."""
     return _get_breakdown(df, '_segment', 'Segment')
+
+
+def get_top_customers(df, n=10):
+    """Get top N customers by revenue."""
+    if '_customer' not in df.columns or '_sales' not in df.columns:
+        return None
+    
+    agg_dict = {'_sales': 'sum'}
+    if '_profit' in df.columns:
+        agg_dict['_profit'] = 'sum'
+    if '_order_id' in df.columns:
+        agg_dict['_order_id'] = 'nunique'
+    if '_quantity' in df.columns:
+        agg_dict['_quantity'] = 'sum'
+    
+    customers = df.groupby('_customer').agg(agg_dict).reset_index()
+    col_map = {'_customer': 'Customer', '_sales': 'Sales', '_profit': 'Profit',
+               '_order_id': 'Orders', '_quantity': 'Items'}
+    customers = customers.rename(columns=col_map)
+    
+    return customers.sort_values('Sales', ascending=False).head(n)
+
+
+def calculate_repeat_customers(df):
+    """
+    Calculate repeat customer metrics.
+    
+    Returns:
+        tuple: (total_customers, repeat_customers, repeat_rate)
+    """
+    if '_customer' not in df.columns:
+        return 0, 0, 0
+    
+    if '_order_id' in df.columns:
+        customer_orders = df.groupby('_customer')['_order_id'].nunique()
+    else:
+        customer_orders = df.groupby('_customer').size()
+    
+    total_customers = len(customer_orders)
+    repeat_customers = (customer_orders >= 2).sum()
+    repeat_rate = (repeat_customers / total_customers * 100) if total_customers > 0 else 0
+    
+    return total_customers, repeat_customers, repeat_rate

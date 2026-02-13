@@ -121,3 +121,19 @@ def create_category_chart(category_df, chart_type='bar'):
     
     fig.update_layout(xaxis_title='', yaxis_title='Amount', **CHART_LAYOUT)
     return fig
+
+
+def create_customers_chart(df):
+    """Create a top customers horizontal bar chart."""
+    if df is None or 'Customer' not in df.columns or 'Sales' not in df.columns:
+        return None
+    
+    df = df.sort_values('Sales', ascending=True)
+    color_col = 'Profit' if 'Profit' in df.columns else 'Sales'
+    
+    fig = px.bar(df, x='Sales', y='Customer', orientation='h',
+                 title='Top Customers by Revenue',
+                 color=color_col,
+                 color_continuous_scale='RdYlGn' if color_col == 'Profit' else 'Purples')
+    fig.update_layout(xaxis_title='Sales', yaxis_title='', **CHART_LAYOUT)
+    return fig

@@ -15,7 +15,7 @@ A simple analytics dashboard for CSV and Excel files.
 - [x] Column mapping system
 - [x] Sample dataset included
 - [x] Overview page (KPIs, trends, breakdowns)
-- [ ] Customer insights page
+- [x] Customer insights page (top buyers, loyalty, segmentation)
 - [ ] Returns analysis page
 
 ### Tech Stack
