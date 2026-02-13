@@ -137,3 +137,37 @@ def create_customers_chart(df):
                  color_continuous_scale='RdYlGn' if color_col == 'Profit' else 'Purples')
     fig.update_layout(xaxis_title='Sales', yaxis_title='', **CHART_LAYOUT)
     return fig
+
+
+def create_return_rate_chart(df):
+    """Create a return rate horizontal bar chart."""
+    if df is None or 'Return Rate' not in df.columns:
+        return None
+    
+    name_col = df.columns[0]
+    df = df.sort_values('Return Rate', ascending=True)
+    
+    fig = px.bar(df, x='Return Rate', y=name_col, orientation='h',
+                 title='Items by Return Rate (%)',
+                 color='Return Rate', color_continuous_scale='Reds')
+    fig.update_layout(xaxis_title='Return Rate (%)', yaxis_title='',
+                      showlegend=False, coloraxis_showscale=False, **CHART_LAYOUT)
+    return fig
+
+
+def create_monthly_change_chart(monthly_df):
+    """Create a month-over-month change chart."""
+    if monthly_df is None or 'Sales Change' not in monthly_df.columns:
+        return None
+    
+    colors = [COLORS['success'] if x >= 0 else COLORS['danger']
+              for x in monthly_df['Sales Change'].fillna(0)]
+    
+    fig = go.Figure(data=[
+        go.Bar(x=monthly_df['Month'], y=monthly_df['Sales Change'],
+               marker_color=colors, name='Sales Change %')
+    ])
+    fig.update_layout(title='Month-over-Month Sales Change (%)',
+                      xaxis_title='', yaxis_title='Change (%)', **CHART_LAYOUT)
+    fig.update_xaxes(tickangle=45)
+    return fig

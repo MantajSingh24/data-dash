@@ -220,3 +220,60 @@ def calculate_repeat_customers(df):
     repeat_rate = (repeat_customers / total_customers * 100) if total_customers > 0 else 0
     
     return total_customers, repeat_customers, repeat_rate
+
+
+def get_return_metrics(df):
+    """Calculate return-related metrics."""
+    metrics = {
+        'total_orders': 0, 'returned_orders': 0,
+        'return_rate': 0, 'returned_sales': 0,
+        'returned_profit_loss': 0
+    }
+    
+    if '_returned' not in df.columns:
+        return metrics
+    
+    if '_order_id' in df.columns:
+        metrics['total_orders'] = df['_order_id'].nunique()
+        metrics['returned_orders'] = df[df['_returned']]['_order_id'].nunique()
+    else:
+        metrics['total_orders'] = len(df)
+        metrics['returned_orders'] = df['_returned'].sum()
+    
+    if metrics['total_orders'] > 0:
+        metrics['return_rate'] = (metrics['returned_orders'] / metrics['total_orders'] * 100)
+    
+    if '_sales' in df.columns:
+        metrics['returned_sales'] = df[df['_returned']]['_sales'].sum()
+    
+    if '_profit' in df.columns:
+        metrics['returned_profit_loss'] = df[df['_returned']]['_profit'].sum()
+    
+    return metrics
+
+
+def get_items_by_return_rate(df, group_col, col_name, n=10):
+    """Get items with highest return rates."""
+    if group_col not in df.columns or '_returned' not in df.columns:
+        return None
+    
+    agg_dict = {'_returned': 'sum'}
+    if '_order_id' in df.columns:
+        agg_dict['_order_id'] = 'nunique'
+    if '_sales' in df.columns:
+        agg_dict['_sales'] = 'sum'
+    if '_profit' in df.columns:
+        agg_dict['_profit'] = 'sum'
+    
+    items = df.groupby(group_col).agg(agg_dict).reset_index()
+    col_map = {group_col: col_name, '_returned': 'Returns',
+               '_order_id': 'Total Orders', '_sales': 'Sales', '_profit': 'Profit'}
+    items = items.rename(columns=col_map)
+    
+    if 'Total Orders' not in items.columns:
+        items['Total Orders'] = df.groupby(group_col).size().values
+    
+    items['Return Rate'] = (items['Returns'] / items['Total Orders'] * 100).round(2)
+    items = items[items['Returns'] > 0]
+    
+    return items.sort_values('Return Rate', ascending=False).head(n)

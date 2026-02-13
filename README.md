@@ -1,22 +1,22 @@
 # Data Dash 📊
 
-A simple analytics dashboard for CSV and Excel files.
+A simple analytics dashboard for CSV and Excel files. Upload your spreadsheet and get instant insights.
 
-## Status: 🚧 In Development
+## Status: ✅ Core Features Complete
 
-### Progress
-- [x] Project setup
+### Features
 - [x] File upload (CSV, Excel)
-- [x] Auto-detect columns
+- [x] Auto-detect column types
+- [x] Dynamic column mapping
 - [x] Basic metrics & summary stats
-- [x] Charts & visualizations (bar, pie, line)
+- [x] Charts & visualizations (bar, pie, line, trend)
 - [x] Dark theme with custom styling
 - [x] Multi-page app structure
-- [x] Column mapping system
-- [x] Sample dataset included
 - [x] Overview page (KPIs, trends, breakdowns)
-- [x] Customer insights page (top buyers, loyalty, segmentation)
-- [ ] Returns analysis page
+- [x] Customer insights (top buyers, loyalty, segmentation)
+- [x] Returns analysis (return rates, problem products)
+- [x] Sidebar filters (date, category, region)
+- [x] Sample dataset included
 
 ### Tech Stack
 - Python
@@ -33,5 +33,12 @@ pip install -r requirements.txt
 streamlit run Home.py
 ```
 
+## How to Use
+
+1. Run the app and go to the **Home** page
+2. Upload a CSV or Excel file
+3. Map your columns (date, revenue, profit, category, etc.)
+4. Navigate to **Overview**, **Customers**, or **Returns** pages in the sidebar
+
 ---
-*Building this step by step. Check back for updates!*
+*Built step by step as a learning project.*
