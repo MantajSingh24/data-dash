@@ -1,4 +1,4 @@
-[server]
+﻿[server]
 headless = true
 address = "localhost"
 port = 8501
@@ -8,12 +8,12 @@ gatherUsageStats = false
 serverAddress = "localhost"
 
 [theme]
-primaryColor = "#ff6b6b"
-backgroundColor = "#1a1a2e"
-secondaryBackgroundColor = "#16213e"
-textColor = "#eaeaea"
+primaryColor = "#2997ff"
+backgroundColor = "#000000"
+secondaryBackgroundColor = "#0a0a0a"
+textColor = "#f5f5f7"
 font = "sans serif"
 
 [client]
-showErrorDetails = true
+showErrorDetails = false
 toolbarMode = "minimal"

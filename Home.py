@@ -183,7 +183,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Animated background: canvas particles + floating orbs
+# Animated background: deep-space particles + shooting stars + orbs
 st.markdown("""
 <div class="orb orb-1"></div>
 <div class="orb orb-2"></div>
@@ -194,96 +194,95 @@ st.markdown("""
     var canvas = document.getElementById('bg-canvas');
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
-
-    function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     resize();
     window.addEventListener('resize', resize);
-
-    var NUM = 70;
-    var particles = [];
-    var mouse = { x: null, y: null };
-
-    window.addEventListener('mousemove', function(e) {
-        mouse.x = e.clientX;
-        mouse.y = e.clientY;
-    });
-
-    function rand(min, max) { return Math.random() * (max - min) + min; }
-
-    var PALETTE = [
-        'rgba(41,151,255,',
-        'rgba(191,90,242,',
-        'rgba(100,210,255,',
-        'rgba(48,209,88,',
-    ];
-
-    for (var i = 0; i < NUM; i++) {
-        particles.push({
-            x: rand(0, window.innerWidth),
-            y: rand(0, window.innerHeight),
-            vx: rand(-0.35, 0.35),
-            vy: rand(-0.35, 0.35),
-            r: rand(1.5, 3.5),
-            color: PALETTE[Math.floor(Math.random() * PALETTE.length)],
-            alpha: rand(0.4, 0.9),
-        });
+    function rand(a,b){return Math.random()*(b-a)+a;}
+    var mouse={x:-9999,y:-9999};
+    window.addEventListener('mousemove',function(e){mouse.x=e.clientX;mouse.y=e.clientY;});
+    window.addEventListener('mouseleave',function(){mouse.x=-9999;mouse.y=-9999;});
+    var PAL=[[41,151,255],[191,90,242],[100,210,255],[48,209,88],[255,159,10]];
+    var NUM=90, particles=[];
+    for(var i=0;i<NUM;i++){
+        var c=PAL[Math.floor(Math.random()*PAL.length)];
+        particles.push({x:rand(0,window.innerWidth),y:rand(0,window.innerHeight),
+            vx:rand(-0.3,0.3),vy:rand(-0.3,0.3),r:rand(1.2,3.0),
+            cr:c[0],cg:c[1],cb:c[2],alpha:rand(0.4,1.0),
+            ps:rand(0.01,0.03),po:rand(0,Math.PI*2)});
     }
-
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Connect nearby particles
-        for (var i = 0; i < particles.length; i++) {
-            for (var j = i + 1; j < particles.length; j++) {
-                var dx = particles[i].x - particles[j].x;
-                var dy = particles[i].y - particles[j].y;
-                var dist = Math.sqrt(dx*dx + dy*dy);
-                var MAX_DIST = 140;
-                if (dist < MAX_DIST) {
-                    var opacity = (1 - dist / MAX_DIST) * 0.18;
-                    ctx.beginPath();
-                    ctx.moveTo(particles[i].x, particles[i].y);
-                    ctx.lineTo(particles[j].x, particles[j].y);
-                    ctx.strokeStyle = particles[i].color + opacity + ')';
-                    ctx.lineWidth = 0.8;
-                    ctx.stroke();
-                }
-            }
-
-            // Mouse attraction
-            if (mouse.x !== null) {
-                var mdx = mouse.x - particles[i].x;
-                var mdy = mouse.y - particles[i].y;
-                var mdist = Math.sqrt(mdx*mdx + mdy*mdy);
-                if (mdist < 160) {
-                    var mOpacity = (1 - mdist / 160) * 0.35;
-                    ctx.beginPath();
-                    ctx.moveTo(particles[i].x, particles[i].y);
-                    ctx.lineTo(mouse.x, mouse.y);
-                    ctx.strokeStyle = particles[i].color + mOpacity + ')';
-                    ctx.lineWidth = 0.6;
-                    ctx.stroke();
-                }
-            }
-
-            // Draw particle
-            ctx.beginPath();
-            ctx.arc(particles[i].x, particles[i].y, particles[i].r, 0, Math.PI * 2);
-            ctx.fillStyle = particles[i].color + particles[i].alpha + ')';
-            ctx.fill();
-
-            // Move
-            particles[i].x += particles[i].vx;
-            particles[i].y += particles[i].vy;
-
-            // Bounce
-            if (particles[i].x < 0 || particles[i].x > canvas.width)  particles[i].vx *= -1;
-            if (particles[i].y < 0 || particles[i].y > canvas.height) particles[i].vy *= -1;
+    var stars=[], ripples=[], frame=0;
+    function spawnStar(){
+        var c=PAL[Math.floor(Math.random()*PAL.length)];
+        var ang=rand(-0.3,0.3)+Math.PI*0.25, spd=rand(8,18);
+        stars.push({x:rand(0,window.innerWidth),y:rand(0,window.innerHeight*0.5),
+            vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,
+            len:rand(60,160),life:1.0,decay:rand(0.012,0.025),cr:c[0],cg:c[1],cb:c[2]});
+    }
+    for(var s=0;s<3;s++) spawnStar();
+    window.addEventListener('click',function(e){ripples.push({x:e.clientX,y:e.clientY,r:0,life:1.0});});
+    function draw(){
+        frame++;
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        if(frame%120===0) spawnStar();
+        for(var s=stars.length-1;s>=0;s--){
+            var st=stars[s];
+            var g=ctx.createLinearGradient(st.x,st.y,st.x-st.vx*(st.len/10),st.y-st.vy*(st.len/10));
+            g.addColorStop(0,'rgba('+st.cr+','+st.cg+','+st.cb+','+st.life*0.9+')');
+            g.addColorStop(1,'rgba('+st.cr+','+st.cg+','+st.cb+',0)');
+            ctx.beginPath();ctx.moveTo(st.x,st.y);
+            ctx.lineTo(st.x-st.vx*(st.len/10),st.y-st.vy*(st.len/10));
+            ctx.strokeStyle=g;ctx.lineWidth=1.5*st.life;ctx.stroke();
+            ctx.beginPath();ctx.arc(st.x,st.y,2*st.life,0,Math.PI*2);
+            ctx.fillStyle='rgba('+st.cr+','+st.cg+','+st.cb+','+st.life+')';ctx.fill();
+            st.x+=st.vx;st.y+=st.vy;st.life-=st.decay;
+            if(st.life<=0) stars.splice(s,1);
         }
-
+        for(var ri=ripples.length-1;ri>=0;ri--){
+            var rp=ripples[ri];
+            ctx.beginPath();ctx.arc(rp.x,rp.y,rp.r,0,Math.PI*2);
+            ctx.strokeStyle='rgba(41,151,255,'+rp.life*0.5+')';ctx.lineWidth=1.5;ctx.stroke();
+            rp.r+=4;rp.life-=0.03;
+            if(rp.life<=0) ripples.splice(ri,1);
+        }
+        var MD=150, MOUSE_D=200;
+        for(var i=0;i<particles.length;i++){
+            var p=particles[i];
+            var pulse=Math.sin(frame*p.ps+p.po)*0.25+0.75, a=p.alpha*pulse;
+            for(var j=i+1;j<particles.length;j++){
+                var q=particles[j];
+                var dx=p.x-q.x,dy=p.y-q.y,dist=Math.sqrt(dx*dx+dy*dy);
+                if(dist<MD){
+                    var la=(1-dist/MD)*0.2*pulse;
+                    ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);
+                    ctx.strokeStyle='rgba('+p.cr+','+p.cg+','+p.cb+','+la+')';
+                    ctx.lineWidth=0.6;ctx.stroke();
+                }
+            }
+            var mdx=mouse.x-p.x,mdy=mouse.y-p.y,md=Math.sqrt(mdx*mdx+mdy*mdy);
+            if(md<MOUSE_D){
+                var ma=(1-md/MOUSE_D)*0.5;
+                ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(mouse.x,mouse.y);
+                ctx.strokeStyle='rgba('+p.cr+','+p.cg+','+p.cb+','+ma+')';
+                ctx.lineWidth=0.9;ctx.stroke();
+                var force=(1-md/MOUSE_D)*0.5;
+                p.vx-=(mdx/md)*force*0.06;p.vy-=(mdy/md)*force*0.06;
+            }
+            var spd=Math.sqrt(p.vx*p.vx+p.vy*p.vy);
+            if(spd>1.2){p.vx*=0.95;p.vy*=0.95;}
+            if(spd<0.1){p.vx+=rand(-0.05,0.05);p.vy+=rand(-0.05,0.05);}
+            var grd=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*4);
+            grd.addColorStop(0,'rgba('+p.cr+','+p.cg+','+p.cb+','+a+')');
+            grd.addColorStop(0.4,'rgba('+p.cr+','+p.cg+','+p.cb+','+(a*0.3)+')');
+            grd.addColorStop(1,'rgba('+p.cr+','+p.cg+','+p.cb+',0)');
+            ctx.beginPath();ctx.arc(p.x,p.y,p.r*4,0,Math.PI*2);ctx.fillStyle=grd;ctx.fill();
+            ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+            ctx.fillStyle='rgba('+p.cr+','+p.cg+','+p.cb+','+a+')';ctx.fill();
+            p.x+=p.vx;p.y+=p.vy;
+            if(p.x<-10)p.x=canvas.width+10;
+            if(p.x>canvas.width+10)p.x=-10;
+            if(p.y<-10)p.y=canvas.height+10;
+            if(p.y>canvas.height+10)p.y=-10;
+        }
         requestAnimationFrame(draw);
     }
     draw();
