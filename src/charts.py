@@ -9,34 +9,31 @@ import pandas as pd
 from typing import Optional
 
 
-# Warm colorful palette for dark theme
 COLORS = {
-    'primary': '#ff6b6b',
-    'secondary': '#feca57',
-    'success': '#2ed573',
-    'danger': '#ff4757',
-    'warning': '#feca57',
-    'info': '#48dbfb',
-    'dark': '#1a1a2e',
-    'light': '#a0a0a0'
+    'primary': '#2997ff',
+    'secondary': '#bf5af2',
+    'success': '#30d158',
+    'danger': '#ff453a',
+    'warning': '#ff9f0a',
+    'info': '#64d2ff',
+    'dark': '#000000',
+    'light': '#86868b'
 }
 
-# Vibrant color sequence
 COLOR_SEQUENCE = [
-    '#ff6b6b', '#feca57', '#48dbfb', '#2ed573',
-    '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3'
+    '#2997ff', '#bf5af2', '#30d158', '#ff9f0a',
+    '#64d2ff', '#ff375f', '#ac8e68', '#5e5ce6'
 ]
 
-# Chart template settings for dark theme
 CHART_TEMPLATE = {
     'layout': {
         'paper_bgcolor': 'rgba(0,0,0,0)',
         'plot_bgcolor': 'rgba(0,0,0,0)',
-        'font': {'family': 'Poppins, sans-serif', 'color': '#eaeaea'},
-        'title': {'font': {'size': 16, 'color': '#ffffff'}},
+        'font': {'family': 'Inter, -apple-system, sans-serif', 'color': '#f5f5f7', 'size': 12},
+        'title': {'font': {'size': 15, 'color': '#f5f5f7', 'weight': 600}},
         'margin': {'t': 50, 'b': 50, 'l': 50, 'r': 30},
-        'xaxis': {'gridcolor': 'rgba(255,255,255,0.1)', 'color': '#a0a0a0'},
-        'yaxis': {'gridcolor': 'rgba(255,255,255,0.1)', 'color': '#a0a0a0'}
+        'xaxis': {'gridcolor': 'rgba(255,255,255,0.06)', 'color': '#86868b', 'zeroline': False},
+        'yaxis': {'gridcolor': 'rgba(255,255,255,0.06)', 'color': '#86868b', 'zeroline': False}
     }
 }
 
@@ -89,13 +86,13 @@ def create_bar_chart(
         fig = px.bar(
             df, x=y, y=x, orientation='h', title=title,
             color=color_by if color_by and color_by in df.columns else y,
-            color_continuous_scale='Reds'
+            color_continuous_scale='Blues'
         )
     else:
         fig = px.bar(
             df, x=x, y=y, title=title,
             color=color_by if color_by and color_by in df.columns else y,
-            color_continuous_scale='Reds'
+            color_continuous_scale='Blues'
         )
     
     fig.update_layout(
@@ -163,7 +160,7 @@ def create_category_chart(category_df: pd.DataFrame, chart_type: str = 'bar') ->
                 y='Sales',
                 title=f'Sales by {name_col}',
                 color='Sales',
-                color_continuous_scale='Reds'
+                color_continuous_scale='Blues'
             )
             fig.update_layout(coloraxis_showscale=False)
         
@@ -191,7 +188,7 @@ def create_top_items_chart(df: pd.DataFrame, metric: str = 'Sales') -> Optional[
         orientation='h',
         title=f'Top Items by {metric}',
         color=metric,
-        color_continuous_scale='Reds'
+        color_continuous_scale='Blues'
     )
     
     fig.update_layout(
@@ -248,7 +245,7 @@ def create_return_rate_chart(df: pd.DataFrame) -> Optional[go.Figure]:
         orientation='h',
         title='Items by Return Rate (%)',
         color='Return Rate',
-        color_continuous_scale='Reds'
+        color_continuous_scale='Blues'
     )
     
     fig.update_layout(
