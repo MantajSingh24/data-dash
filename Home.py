@@ -129,7 +129,166 @@ st.markdown("""
     .file-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
     .file-badge .fname { color: var(--text); font-weight: 600; font-size: 0.95rem; }
     .file-badge .fmeta { color: var(--text-sec); font-size: 0.8rem; }
+
+    /* Animated background canvas */
+    #bg-canvas {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    /* Floating gradient orbs */
+    .orb {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(80px);
+        z-index: 0;
+        pointer-events: none;
+        animation: orbFloat linear infinite;
+    }
+    .orb-1 {
+        width: 500px; height: 500px;
+        background: radial-gradient(circle, rgba(41,151,255,0.12) 0%, transparent 70%);
+        top: -100px; left: -100px;
+        animation-duration: 20s;
+        animation-delay: 0s;
+    }
+    .orb-2 {
+        width: 600px; height: 600px;
+        background: radial-gradient(circle, rgba(191,90,242,0.10) 0%, transparent 70%);
+        top: 30vh; right: -150px;
+        animation-duration: 25s;
+        animation-delay: -8s;
+    }
+    .orb-3 {
+        width: 400px; height: 400px;
+        background: radial-gradient(circle, rgba(48,209,88,0.07) 0%, transparent 70%);
+        bottom: 10vh; left: 20vw;
+        animation-duration: 18s;
+        animation-delay: -12s;
+    }
+    @keyframes orbFloat {
+        0%   { transform: translate(0px, 0px) scale(1); }
+        25%  { transform: translate(40px, -30px) scale(1.05); }
+        50%  { transform: translate(20px, 50px) scale(0.97); }
+        75%  { transform: translate(-30px, 20px) scale(1.03); }
+        100% { transform: translate(0px, 0px) scale(1); }
+    }
+
+    /* Ensure Streamlit content sits above the canvas */
+    .stApp > div { position: relative; z-index: 1; }
+    [data-testid="stAppViewContainer"] { position: relative; z-index: 1; }
 </style>
+""", unsafe_allow_html=True)
+
+# Animated background: canvas particles + floating orbs
+st.markdown("""
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<canvas id="bg-canvas"></canvas>
+<script>
+(function() {
+    var canvas = document.getElementById('bg-canvas');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    var NUM = 70;
+    var particles = [];
+    var mouse = { x: null, y: null };
+
+    window.addEventListener('mousemove', function(e) {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+    });
+
+    function rand(min, max) { return Math.random() * (max - min) + min; }
+
+    var PALETTE = [
+        'rgba(41,151,255,',
+        'rgba(191,90,242,',
+        'rgba(100,210,255,',
+        'rgba(48,209,88,',
+    ];
+
+    for (var i = 0; i < NUM; i++) {
+        particles.push({
+            x: rand(0, window.innerWidth),
+            y: rand(0, window.innerHeight),
+            vx: rand(-0.35, 0.35),
+            vy: rand(-0.35, 0.35),
+            r: rand(1.5, 3.5),
+            color: PALETTE[Math.floor(Math.random() * PALETTE.length)],
+            alpha: rand(0.4, 0.9),
+        });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Connect nearby particles
+        for (var i = 0; i < particles.length; i++) {
+            for (var j = i + 1; j < particles.length; j++) {
+                var dx = particles[i].x - particles[j].x;
+                var dy = particles[i].y - particles[j].y;
+                var dist = Math.sqrt(dx*dx + dy*dy);
+                var MAX_DIST = 140;
+                if (dist < MAX_DIST) {
+                    var opacity = (1 - dist / MAX_DIST) * 0.18;
+                    ctx.beginPath();
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(particles[j].x, particles[j].y);
+                    ctx.strokeStyle = particles[i].color + opacity + ')';
+                    ctx.lineWidth = 0.8;
+                    ctx.stroke();
+                }
+            }
+
+            // Mouse attraction
+            if (mouse.x !== null) {
+                var mdx = mouse.x - particles[i].x;
+                var mdy = mouse.y - particles[i].y;
+                var mdist = Math.sqrt(mdx*mdx + mdy*mdy);
+                if (mdist < 160) {
+                    var mOpacity = (1 - mdist / 160) * 0.35;
+                    ctx.beginPath();
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(mouse.x, mouse.y);
+                    ctx.strokeStyle = particles[i].color + mOpacity + ')';
+                    ctx.lineWidth = 0.6;
+                    ctx.stroke();
+                }
+            }
+
+            // Draw particle
+            ctx.beginPath();
+            ctx.arc(particles[i].x, particles[i].y, particles[i].r, 0, Math.PI * 2);
+            ctx.fillStyle = particles[i].color + particles[i].alpha + ')';
+            ctx.fill();
+
+            // Move
+            particles[i].x += particles[i].vx;
+            particles[i].y += particles[i].vy;
+
+            // Bounce
+            if (particles[i].x < 0 || particles[i].x > canvas.width)  particles[i].vx *= -1;
+            if (particles[i].y < 0 || particles[i].y > canvas.height) particles[i].vy *= -1;
+        }
+
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+</script>
 """, unsafe_allow_html=True)
 
 
